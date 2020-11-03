@@ -1,0 +1,104 @@
+\documentclass[aspectratio=169,8pt]{beamer}
+
+\usepackage[T1,T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[main=russian,english]{babel}
+\usepackage[normalem]{ulem}
+\usepackage{hyperref}
+\usepackage{amsmath,amsthm,amssymb,lmodern}
+
+\usetheme{Boadilla}
+\setbeamertemplate{caption}{\insertcaption}
+
+\title[Проект по дисциплине МИИАД] {Проект по дисциплине "Методы искусственного интеллекта в анализе данных"}
+\subtitle{Этап 1}
+
+\author[Бобровских, Иванов, Угадяров] {Бобровских Глеб, Иванов Дмитрий, Угадяров Леонид \\ \tiny\url{https://github.com/ugadiarov-la-phystech-edu/aimda-project}}
+\institute{Группа 4}
+
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Набор данных и применённые модели}
+
+Рассматривается подвыборка за 2014 год из набора данных об убийствах в США \href{https://www.kaggle.com/murderaccountability/homicide-reports}{\color{blue}{Homicide Reports, 1980-2014}}.
+\newline Задача классификации --- предсказание значения бинарного признака \emph {Crime Solved}.
+\newline Метрика качества --- \emph {F1} мера для класса нераскрытых преступлений.
+
+\begin{block}{Метод опорных векторов}
+В качестве реализации алгоритма использовался класс \emph {sklearn.svm.SVC} библиотеки \emph {Scikit-learn}. Наилучшие гиперпараметры\footnotemark:
+\newline \emph {C = 0.1}, \emph {class\_weight = None}, \emph {coef0 = 0}, \emph {gamma = 'scale'}, \emph {kernel = 'linear'}
+\end{block}
+
+\begin{block}{Случайный лес}
+В качестве реализации алгоритма использовался класс \emph {sklearn.ensemble.RandomForestClassifier} библиотеки \emph {Scikit-learn}. Наилучшие гиперпараметры\footnotemark[1]:
+\newline \emph {criterion = 'gini'}, \emph {max\_depth = 10}, \emph {max\_features = 'auto'}, \emph {n\_estimators = 500}
+\end{block}
+
+\begin{block}{Бустинг}
+В качестве реализации алгоритма использовалась класс \emph {catboost.CatBoostClassifier} библиотеки \emph {CatBoost}. Наилучшие гиперпараметры\footnotemark[1]:
+\newline \emph {iterations = 300}, \emph {depth = 6}, \emph {loss\_function = 'Logloss'}, \emph {learning\_rate = 0.1}, \emph {l2\_leaf\_reg = 4.5}
+\end{block}
+
+\footnotetext{Значения остальных гиперпараметров оставлены по умолчанию}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Результаты экспериментов}
+
+Эксперименты проводились на платформе \emph{Google Colaboratory}. Характеристики предоставляемого оборудования:
+\begin{itemize}
+\item 2 ядра процессора Intel Xeon E5-2699 v4 2.20 ГГц
+\item 12ГБ оперативной памяти
+\end{itemize}
+
+{\fontsize{7.5}{10}\selectfont {
+\begin{table}
+\centering
+\caption{Метрики качества классификации обученных моделей}
+\vspace{-5pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\  & \emph {F1} & \emph {Precision} & \emph {Recall} \\
+\hline
+\emph {SVC} & 0.735 $\pm$ 0.007 & 0.703 $\pm$ 0.005 & 0.770 $\pm$ 0.017\\
+\hline
+\emph {RandomForest} & 0.737 $\pm$ 0.009 & 0.725 $\pm$ 0.005 & 0.75 $\pm$ 0.02\\
+\hline
+\emph {CatBoost} & 0.748 $\pm$ 0.010 & 0.730 $\pm$ 0.008 & 0.767 $\pm$ 0.016\\
+\hline
+\end{tabular}
+\end{table}
+}}
+
+{\fontsize{7.5}{10}\selectfont {
+\begin{table}
+\centering
+\caption{Быстродействие обученных моделей}
+\vspace{-5pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\  & \  & \  & \ \\
+\  & \text{Время обучения, с} & $\dfrac{\text{Время обучения}}{\text{Количество объектов}}, \text{мс}$ \newline & \text{Время предсказания на одном объекте, мс} \\
+\  & \  & \  & \ \\
+\hline
+\emph {SVC} & 16.4 & 1.89 & 1.3\\
+\hline
+\emph {RandomForest} & 3.4 & 0.39 & 37.2\\
+\hline
+\emph {CatBoost} & 4.7 & 0.54 & 1.5 \\
+\hline
+\end{tabular}
+\end{table}
+}}
+
+\end{frame}
+
+
+\end{document}
