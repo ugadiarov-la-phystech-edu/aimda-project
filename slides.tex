@@ -24,11 +24,36 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Набор данных и применённые модели}
+\frametitle{Набор данных и постановка задачи}
 
-Рассматривается подвыборка за 2014 год из набора данных об убийствах в США \href{https://www.kaggle.com/murderaccountability/homicide-reports}{\color{blue}{Homicide Reports, 1980-2014}}.
-\newline Задача классификации --- предсказание значения бинарного признака \emph {Crime Solved}.
-\newline Метрика качества --- \emph {F1} мера для класса нераскрытых преступлений.
+\begin{itemize}
+\item { Рассматривается подвыборка за 2014 год из набора данных об убийствах в США \\ Homicide Reports, 1980-2014 --- https://www.kaggle.com/murderaccountability/homicide-reports }
+\item Задача классификации --- предсказание значения бинарного признака \emph {Crime Solved}
+\item Метрика качества --- \emph {F1} мера для класса нераскрытых преступлений
+\item {Актуальность --- Российская полиция собралась выявлять серийных преступников с помощью нейросети \\ https://lenta.ru/news/2020/11/16/mvd/ }
+\end{itemize}
+
+\begin{block}{Категориальные признаки}
+Agency Type, State, City, Crime Type, Victim Sex, Victim Race, Victim Ethnicity, Weapon
+\end{block}
+
+\begin{block}{Вещественные признаки}
+Victim Age, Victim Count, Perpetrator Count
+\end{block}
+
+Количество объектов: 8637 \newline
+
+Вклад:
+\begin{itemize}
+\item Бобровских Глеб --- композиций алгоритмов (случайный лес, бустинг)
+\item Иванов Дмитрий --- метод опорных векторов
+\item Угадяров Леонид --- EDA, предобработка данных
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Применённые модели}
 
 \begin{block}{Метод опорных векторов}
 В качестве реализации алгоритма использовался класс \emph {sklearn.svm.SVC} библиотеки \emph {Scikit-learn}. Наилучшие гиперпараметры\footnotemark:
