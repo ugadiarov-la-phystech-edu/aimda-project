@@ -11,6 +11,8 @@
 \usepackage{wrapfig}
 \usepackage{caption}
 
+\graphicspath{ {./images/} }
+
 \usetheme{Boadilla}
 \setbeamertemplate{caption}{\insertcaption}
 
@@ -31,23 +33,26 @@
 \frametitle{Набор данных и постановка задачи}
 
 \begin{itemize}
-\item { Рассматривается подвыборка за 2014 год из набора данных об убийствах в США \\ Homicide Reports, 1980-2014 --- https://www.kaggle.com/murderaccountability/homicide-reports }
-\item Задача прогнозирования временных рядов --- предсказание значений временного ряда (число убийств в США) для 24 месяцев (2013-ый и 2014-ые года) на основе исторических данных \emph {Crime Solved}
+\item { Рассматривается временной ряд количества убийств в США, совершённых за месяц, полученный агрегацией исходного набора данных Homicide Reports (1980-2014):\\https://www.kaggle.com/murderaccountability/homicide-reports }
+\item Решается задача прогнозирования количества убийств на следующий месяц по историческим данным
 \item Метрика качества --- \emph {RMSE} для значений временного ряда
-\item {Актуальность --- возможность предсказать количество преступлений в стране на будущий(ие) год(а) кажется вполне очевидной, поскольку качественное решение позволит планировать затраты на полицейские учереждения  }
+\item {Актуальность --- качественное прогнозирование количества преступлений поможет эффективнее организовать работу полицейских учереждений  }
 \end{itemize}
 
-\begin{block}{Признаки}
-Number of cases - количество убийств на всей территории США, распределенное во времени 
+\begin{block}{Целевая переменная и признаки}
+Целевая переменная: NumCases --- количество убийств на всей территории США за один месяц\\
+Признаки: значения NumCases за предыдущие 12 месяцев и значения 117 агрегированных признаков исходного набора данных за предыдущие 12 месяцев (всего 1416 признаков)\\
+Также производились эксперименты с использованием данных за предыдущие 24 месяца (2832 признака)
 \end{block}
 
 Количество объектов:  420 (месяцев)\newline
+Тестовая выборка: 60 (месяцев) \newline
 
 Вклад:
 \begin{itemize}
-\item Бобровских Глеб --- методы Linear Regression, AutoRegression, ARIMAX
-\item Иванов Дмитрий --- нейронные сети
-\item Угадяров Леонид --- методы ARIMA, SARIMA, ARIMAX
+\item Бобровских Глеб --- AutoRegression, ARIMAX
+\item Иванов Дмитрий --- RNN, LSTM
+\item Угадяров Леонид --- ElasticNet, MLP
 \end{itemize}
 
 \end{frame}
@@ -55,33 +60,37 @@ Number of cases - количество убийств на всей террит
 \begin{frame}
 \frametitle{Иллюстрация данных}
 
-Временной ряд: (Ox - количество преступлений, Oy - даты в месяцах)
-
 \begin{figure}[h!]
-        \center{\includegraphics[scale=0.3]{./time_series}}
+        \center{\includegraphics[scale=0.3]{time_series}}
         \captionsetup{labelformat=empty}
         \vspace{-2.3em}
         \caption[scale=0.25]{}
 \end{figure}
 
 
-
-Также использовался временной ряд с логарифмированными значениями числа преступлений.
-
 \end{frame}
 
 \begin{frame}
 \frametitle{Применённые модели}
-\begin{itemize}
-\item Линейная регрессия -- sklearn.linear\_model, обучалась на количестве дней от начальной даты;\\
-\item Авто регрессия -- statsmodels.tsa.ar\_model.AutoReg, параметры lags = 12; \\
-\item ARIMA -- statsmodels.tsa.arima\_model.ARIMA, параметры order = \(12,0,11\), предсказания строились пошагово для дифференцированного шага с параметром lag = 1; \\
-\item SARIMA -- statsmodels.tsa.statespace.sarimax.SARIMAX, параметры order = (11,1,11), seasonal\_order=(12,1,11,12), exog=None;\\
-\item ARIMAX -- statsmodels.tsa.statespace.sarimax.SARIMAX, order = (1,1,12), seasonal\_order = (0,0,0,0), exog = \{one-hot признаки: месяц, день недели; бинарный признак: выходной день\};\\
-\item Полносвязная нейросеть (FCN) -- pytorch.nn.Linear, использовалось различное количество признаков на скрытом слое, в результатах указаны метрики для n\_hidden = 1024; \\
-\item Реккурентная нейросеть  (RNN) -- pytorch.nn.RNN, n\_hidden = 1024; \\
-\item LSTM -- pytorch.nn.LSTM, n\_hidden = 1024; \\
-\end{itemize}
+\begin{block}{\texttt{ElasticNet -- sklearn.linear\_model.ElasticNet}}
+Подбор гиперпараметров с помощью \texttt{sklearn.linear\_model.ElasticNetCV}:\\
+\texttt{l1\_ratio=[.01, .1, .5, .7, .9, .95, .99, .999, 1], n\_alphas=1000, max\_iter=10000}.\\
+Лучшие значения для прогноза по 12 месяцам: l1\_ratio=0.1, alpha=3077.72.\\
+Лучшие значения для прогноза по 24 месяцам: l1\_ratio=1, alpha=56.68.
+\end{block}
+
+\begin{block}{\texttt{MLP} -- фреймворк \texttt{PyTorch}}
+Рассматривались архитектуры до четырёх полносвязных слоёв с батч-нормализацией и дропаутом. Лучшее качество достигнуто при использовании двухслойной архитектуры без батч-нормализации и дропаута.\\
+Количество нейронов  нейронов скрытых слоёв: 12, 24, 32, 64, 96.\\
+Лучшее значение: 32. Функция активации: \texttt{ReLU}.
+\end{block}
+
+\begin{block}{\texttt{RNN} и \texttt{LSTM} -- фреймворк \texttt{PyTorch}}
+Размерность скрытого слоя: 16, 32, 64, 128, 256, 1024.\\
+Лучшие значения для прогноза по 12 месяцам: 64.\\
+Лучшие значения для прогноза по 24 месяцам: 1024.\\
+\end{block}
+
 
 \end{frame}
 
@@ -91,40 +100,45 @@ Number of cases - количество убийств на всей террит
 {\fontsize{7.5}{10}\selectfont {
 \begin{table}
 \centering
-\caption{Метрики качества классификации обученных моделей на Test}
+\caption{Метрики качества обученных моделей на тестовой выборке}
 \vspace{-5pt}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|}
 \hline
-\  & \emph {RMSE} & \emph {Log Data RMSE} & \emph {Time Consumption Train (s)} & \emph {Time Consumption Pred (s)} \\
+\  & \emph {RMSE} & \emph {Время обучения, с} & \emph {Время предсказания, с} \\
 \hline
-\emph {Linear Regression} & 1196.16 & 0.09 & 0.001 & 0.0004 \\
+\emph {ElasticNet+features (12 месяцев)} & 74.17 & 0.15 & 0.00012 \\
 \hline
-\emph {AutoRegression} & 83.963 & 0.069 & 0.005 & 0.0015 \\
+\emph {MLP (12 месяцев)} & 70.16 & 32.1 (2092 эпохи) & 0.0002 \\
 \hline
-\emph {ARIMA} & 184.55 & 0.144 & 99.447 & 0.0075 \\
+\emph {LSTM (12 месяцев)} & 76.45 & 44.1 & 0.001 \\
 \hline
-\emph {SARIMA} & 184.55 & 0.076 & 562.12 & 0.056 \\
+\emph {ElasticNet (24 месяца)} & 61.02 & 0.0016 & 0.00012 \\
 \hline
-\emph {ARIMAX} & 92.809 & 0.08 & 5.88 & 0.019 \\
+\emph {MLP (24 месяца)} & 63.47 & 19.6 (1203 эпохи) & 0.0002 \\
 \hline
-\emph {FCN} & 109.66 & 0.08 & 0.422 (200 эпох) & -- \\
-\hline
-\emph {RNN} & 273.82 & 0.175 & 16.357 (2000 эпохи) & --\\
-\hline
-\emph {LSTM} & 273.81 & -- & 43.974 (2000 эпохи) & -- \\
+\emph {LSTM (24 месяцев)} & 90.01 & 114.5 & 0.002 \\
 \hline
 \end{tabular}
 \end{table}
 }}
-
-
+\ \\
 \textbf{Спецификации рабочих машин:} \\
 \begin{itemize}
-\item Измерение времени для линейной регрессии и прочих классических методов \\ \textbf{Процессор:} 2,3 GHz Dual-Core Intel Core i5, \textbf{Память}: 8 GB 2133 MHz LPDDR3 \\
-\item Измерения времени для нейронных сетей \\ \textbf{Процессор}: Intel Core i-7-8750H CPU @ 2.20GHz, \textbf{Память}: 16834 Mb RAM, \textbf{Видеокарта}: NVIDIA GeForce RTX 2060\\
+\item Измерение времени для \emph {ElasticNet} и \emph{MLP}: Intel Xeon E5-2699 v4 @ 2.20 ГГц, 12ГБ ОЗУ \\
+\item Измерения времени для LSTM и RNN: \\ Intel Core i-7-8750H @ 2.20ГГц, 16 ГБ ОЗУ, NVIDIA GeForce RTX 2060\\
 \end{itemize}
 
 \end{frame}
-\frametitle{Спецификации рабочих машин}
+
+\begin{frame}
+\frametitle{Иллюстрация предсказаний лучшей модели}
+
+\begin{figure}[h!]
+        \center{\includegraphics[scale=0.3]{elasticNet_24months}}
+        \captionsetup{labelformat=empty}
+        \vspace{-2.3em}
+        \caption[scale=0.25]{}
+\end{figure}
+\end{frame}
 
 \end{document}
