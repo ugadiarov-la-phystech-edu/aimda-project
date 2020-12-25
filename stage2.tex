@@ -1,5 +1,7 @@
 \documentclass[aspectratio=169,8pt]{beamer}
 
+\geometry{paperwidth=169mm,paperheight=95mm}
+
 \usepackage[T1,T2A]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[main=russian,english]{babel}
@@ -50,7 +52,7 @@
 
 Вклад:
 \begin{itemize}
-\item Бобровских Глеб --- AutoRegression, ARIMAX
+\item Бобровских Глеб --- ARIMA, ARIMAX
 \item Иванов Дмитрий --- RNN, LSTM
 \item Угадяров Леонид --- ElasticNet, MLP
 \end{itemize}
@@ -87,8 +89,12 @@
 
 \begin{block}{\texttt{RNN} и \texttt{LSTM} -- фреймворк \texttt{PyTorch}}
 Размерность скрытого слоя: 16, 32, 64, 128, 256, 1024.\\
-Лучшие значения для прогноза по 12 месяцам: 64.\\
-Лучшие значения для прогноза по 24 месяцам: 1024.\\
+Лучшие значения для прогноза по 12 месяцам: 64. Лучшие значения для прогноза по 24 месяцам: 1024.
+\end{block}
+
+\begin{block}{\texttt{ARIMA} и \texttt{ARIMAX} -- пакет \texttt{statmodels}}
+Произведено дифференцирование исходного ряда. Стационарность ряда проверена критерием Дики-Фуллера. Для выбора лучших параметров использовался критерий Акаике.\\
+ARIMA --- order=(24, 1, 12). ARIMAX --- order=(12, 1, 0), seasonal\_order=(0, 0, 0, 0).
 \end{block}
 
 
@@ -97,10 +103,12 @@
 \begin{frame}
 \frametitle{Результаты экспериментов}
 
++features --- модель использует агрегированные признаки исходного набора данных
+
 {\fontsize{7.5}{10}\selectfont {
 \begin{table}
 \centering
-\caption{Метрики качества обученных моделей на тестовой выборке}
+\caption{Метрики качества обученных моделей ElasticNet, MLP, LSTM на тестовой выборке}
 \vspace{-5pt}
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -121,20 +129,50 @@
 \end{tabular}
 \end{table}
 }}
+
+{\fontsize{7.5}{10}\selectfont {
+\begin{table}
+\centering
+\caption{Метрики качества обученных моделей ARIMA и ARIMAX на тестовой выборке}
+\vspace{-5pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\  & \emph {RMSE} & \emph {Время обучения, с} & \emph {Время предсказания, с} \\
+\hline
+\emph {ARIMA} & 64.92 & 2068.3 & 0.016 \\
+\hline
+\emph {ARIMAX} & 62.15 & 1.37 & 0.0076 \\
+\hline
+\end{tabular}
+\end{table}
+}}
+
 \ \\
 \textbf{Спецификации рабочих машин:} \\
 \begin{itemize}
 \item Измерение времени для \emph {ElasticNet} и \emph{MLP}: Intel Xeon E5-2699 v4 @ 2.20 ГГц, 12ГБ ОЗУ \\
-\item Измерения времени для LSTM и RNN: \\ Intel Core i-7-8750H @ 2.20ГГц, 16 ГБ ОЗУ, NVIDIA GeForce RTX 2060\\
+\item Измерения времени для LSTM и RNN: Intel Core i-7-8750H @ 2.20ГГц, 16 ГБ ОЗУ, NVIDIA GeForce RTX 2060\\
+\item Измерения времени для ARIMA и ARIMAX: Dual-Core Intel Core i5 @ 2.30ГГц, 8 ГБ ОЗУ\\
 \end{itemize}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Иллюстрация предсказаний лучшей модели}
+\frametitle{Иллюстрация предсказаний лучшей модели ElasticNet}
 
 \begin{figure}[h!]
         \center{\includegraphics[scale=0.3]{elasticNet_24months}}
+        \captionsetup{labelformat=empty}
+        \vspace{-2.3em}
+        \caption[scale=0.25]{}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Иллюстрация предсказаний лучшей модели ARIMAX}
+
+\begin{figure}[h!]
+        \center{\includegraphics[scale=0.35]{arimax}}
         \captionsetup{labelformat=empty}
         \vspace{-2.3em}
         \caption[scale=0.25]{}
